@@ -1,50 +1,66 @@
 package Entity;
 
 import Controller.Controller;
+import Core.Game;
 import Core.Position;
 import Core.Size;
-import Display.Canva;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Player extends GameObject{
 
-    private Controller controller;
-    private double xspeed = 5;
-    private double yspeed = 8;
+    private final Controller controller;
     double deltaY = 0;
     double deltaX = 0;
     public Player(Controller controller) {
-        super(new Position(375, 450), new Size(50, 50));
+        super(new Position(375, -200), new Size(50, 50));
         this.controller = controller;
     }
 
-    public boolean checkCollisions() {
-        Rectangle p = new Rectangle((int)position.getX(), (int)position.getY(), size.getLargeur(), size.getLongueur());
-        return true;
+    public int horizontalCollision(Rectangle playerHitBox, Rectangle groundHitBox, double deltaY) {
+        if (playerHitBox.intersects(groundHitBox)) {
+            playerHitBox.y -= (int) deltaY;
+            while (!playerHitBox.intersects(groundHitBox)) {
+                playerHitBox.y++;
+            }
+            return (playerHitBox.y - 1);
+        }
+        return 10000;
     }
 
     @Override
     public void update() {
-        if (checkCollisions()) {
-            deltaX = 0;
-            deltaY += 0.5;
+        deltaY +=0.4;
+        deltaX = 0;
 
-            if (controller.isRequestingDown()) {
-                deltaY += 1;
-            }
-            if (controller.isRequestingUp()) {
+        Ground ground = Game.getGround();
+        Rectangle playerHitBox = new Rectangle((int) position.getX(), (int) position.getY() + (int) deltaY, size.getLargeur(), size.getLongueur());
+        Rectangle groundHitBox = new Rectangle((int) ground.position.getX(), (int) ground.position.getY(), ground.size.getLargeur(), ground.size.getLongueur());
+
+        int y = horizontalCollision(playerHitBox, groundHitBox, deltaY);
+        if (y == 10000) {
+            y = (int)position.getY();
+        } else {
+            deltaY = 0;
+        }
+
+        //if (controller.isRequestingDown()) {}
+
+        if (controller.isRequestingUp()) {
+            if (playerHitBox.intersects(groundHitBox)) {
+                double yspeed = 8;
                 deltaY = -yspeed;
             }
-            if (controller.isRequestingLeft()) {
-                deltaX -= xspeed;
-            }
-            if (controller.isRequestingRight()) {
-                deltaX += xspeed;
-            }
-            position = new Position(position.getX() + deltaX, position.getY() + deltaY);
         }
+        double xspeed = 5;
+        if (controller.isRequestingLeft()) {
+            deltaX -= xspeed;
+        }
+        if (controller.isRequestingRight()) {
+            deltaX += xspeed;
+        }
+        position = new Position(position.getX() + deltaX, y + deltaY);
     }
 
     @Override

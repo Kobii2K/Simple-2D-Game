@@ -12,19 +12,19 @@ import java.util.List;
 
 public class Game {
 
+    private static Ground ground;
     private final List<GameObject> gameObjects;
     private final JFrameWindow window;
     private final Canva canva;
     private final Input input;
-    public Ground ground;
 
     public Game(int largeur, int longueur) {
         this.input = new Input();
         this.window = new JFrameWindow(largeur, longueur, input);
         this.canva = window.canva;
         this.gameObjects = new ArrayList<>();
-        this.gameObjects.add(new Player(new PlayerController(input)));
         this.gameObjects.add(ground = new Ground());
+        this.gameObjects.add(new Player(new PlayerController(input)));
     }
 
     public List<GameObject> getGameObjects() {
@@ -35,6 +35,10 @@ public class Game {
         for (GameObject objet : this.gameObjects) {
             objet.update();
         }
+    }
+
+    public static Ground getGround() {
+        return ground;
     }
 
     public void render() {
